@@ -53,15 +53,9 @@ A modern, fast, and responsive Web Application built specifically for **Daffodil
 1. Clone or download this repository:
    ```bash
    git clone https://github.com/your-username/DIU_CSE_CGPA_CALCULATOR.git
-   ```
-2. Navigate into the project folder:
-   ```bash
-   cd DIU_CSE_CGPA_CALCULATOR
-   ```
-3. Open `index.html` in your favorite web browser (Chrome, Edge, Firefox, Safari).
 
----
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+https://github.com/UdoySadik/DIU_CSE_CGPA_CALCULATOR.git

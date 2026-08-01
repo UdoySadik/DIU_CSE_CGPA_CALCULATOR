@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSE SGPA & CGPA System</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- AUTHENTICATION OVERLAY / MODAL -->
+    <div id="auth-modal" class="auth-overlay">
+        <div class="auth-card glass-panel">
+            <div class="auth-header">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2>CSE Result Portal</h2>
+                <p>Manage, calculate, and track your SGPA & CGPA effortlessly</p>
+            </div>
+            
+            <div class="auth-form-container">
+                <div id="auth-alert" class="alert hidden"></div>
+                
+                <div class="input-group">
+                    <label for="student-id"><i class="fa-solid fa-id-card"></i> Student ID</label>
+                    <input type="text" id="student-id" placeholder="e.g. 251-15-065" autocomplete="off">
+                </div>
+
+                <div class="input-group">
+                    <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="password" placeholder="Enter password">
+                </div>
+
+                <div class="auth-actions">
+                    <button id="btn-login" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                    </button>
+                    <button id="btn-register" class="btn btn-success btn-block">
+                        <i class="fa-solid fa-user-plus"></i> Register
+                    </button>
+                </div>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <button id="btn-guest" class="btn btn-guest btn-block">
+                    <i class="fa-solid fa-user-clock"></i> Continue as Guest
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP LAYOUT -->
+    <div id="app-container" class="app-layout hidden">
+        <!-- SIDEBAR -->
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <div class="app-brand">
+                    <i class="fa-solid fa-graduation-cap brand-icon"></i>
+                    <div class="brand-text">
+                        <h3>CSE Portal</h3>
+                        <span class="sub">SGPA & CGPA Tracker</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-badge" id="user-badge-container">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="user-info">
+                    <span class="id" id="display-student-id">Guest Mode</span>
+                    <span class="status-pill" id="user-status-pill">Guest</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="theory-result">
+                    <i class="fa-solid fa-calculator"></i> <span>Theory Marks</span>
+                </button>
+                <button class="nav-item" data-tab="sgpa-entry">
+                    <i class="fa-solid fa-pen-to-square"></i> <span>Enter SGPA</span>
+                </button>
+                <button class="nav-item guest-disabled" data-tab="view-sgpa">
+                    <i class="fa-solid fa-table-list"></i> <span>View SGPA Records</span>
+                </button>
+                <button class="nav-item guest-disabled" data-tab="cgpa-result">
+                    <i class="fa-solid fa-award"></i> <span>CGPA Overview</span>
+                </button>
+                <button class="nav-item" data-tab="manual-cgpa">
+                    <i class="fa-solid fa-sliders"></i> <span>Manual CGPA</span>
+                </button>
+                <button class="nav-item guest-disabled" data-tab="target-cgpa">
+                    <i class="fa-solid fa-bullseye"></i> <span>Target CGPA Planner</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="btn-logout" class="btn btn-outline-danger btn-block">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <!-- TOP BAR -->
+            <header class="top-bar glass-panel">
+                <div class="mobile-toggle" id="mobile-toggle">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+                <div class="page-title">
+                    <h2 id="current-tab-title">Dashboard</h2>
+                </div>
+                <div class="top-actions">
+                    <button id="btn-quick-export" class="btn btn-outline btn-sm guest-disabled">
+                        <i class="fa-solid fa-file-export"></i> Export Report
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB CONTENTS -->
+            <div class="content-wrapper">
+
+                <!-- 1. DASHBOARD -->
+                <section id="tab-dashboard" class="tab-pane active">
+                    <div class="hero-banner glass-panel">
+                        <div class="hero-text">
+                            <h1 id="welcome-message">Welcome to CSE SGPA & CGPA System</h1>
+                            <p>Track your academic journey, calculate semester GPAs, and plan your target graduation CGPA effortlessly.</p>
+                        </div>
+                        <div class="hero-stats">
+                            <div class="stat-box">
+                                <span class="stat-label">Current CGPA</span>
+                                <span class="stat-value" id="dash-cgpa">--</span>
+                                <span class="stat-grade" id="dash-grade">--</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Completed Credits</span>
+                                <span class="stat-value" id="dash-credits">0.0 / 154.5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions-grid">
+                        <div class="action-card glass-panel" onclick="switchTab('theory-result')">
+                            <div class="card-icon cyan"><i class="fa-solid fa-flask"></i></div>
+                            <h3>Theory Course Calculator</h3>
+                            <p>Calculate total marks and estimated grade out of 100 for any course.</p>
+                            <span class="card-link">Calculate Now <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+
+                        <div class="action-card glass-panel" onclick="switchTab('sgpa-entry')">
+                            <div class="card-icon blue"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <h3>Semester SGPA Entry</h3>
+                            <p>Input course grade points for any semester (L1T1 to L4T3) to compute SGPA.</p>
+                            <span class="card-link">Enter Grades <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+
+                        <div class="action-card glass-panel" onclick="switchTab('manual-cgpa')">
+                            <div class="card-icon purple"><i class="fa-solid fa-calculator"></i></div>
+                            <h3>Manual CGPA Calculator</h3>
+                            <p>Quickly calculate cumulative GPA by filling semester SGPAs.</p>
+                            <span class="card-link">Open Calculator <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+
+                        <div class="action-card glass-panel" onclick="switchTab('target-cgpa')">
+                            <div class="card-icon amber"><i class="fa-solid fa-bullseye"></i></div>
+                            <h3>Target CGPA Planner</h3>
+                            <p>Plan ahead! Find out what average SGPA you need in upcoming semesters.</p>
+                            <span class="card-link">Plan Target <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. THEORY RESULT CALCULATOR -->
+                <section id="tab-theory-result" class="tab-pane">
+                    <div class="card-container glass-panel">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-calculator"></i> Theory Course Mark Calculator</h3>
+                            <p>Calculate your course score out of 100 based on continuous assessment & exams.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="input-field">
+                                    <label>Attendance (Max 7)</label>
+                                    <input type="number" id="th-attendance" min="0" max="7" step="0.5" placeholder="0 - 7">
+                                </div>
+                                <div class="input-field">
+                                    <label>Assignment (Max 5)</label>
+                                    <input type="number" id="th-assignment" min="0" max="5" step="0.5" placeholder="0 - 5">
+                                </div>
+                                <div class="input-field">
+                                    <label>Presentation (Max 8)</label>
+                                    <input type="number" id="th-presentation" min="0" max="8" step="0.5" placeholder="0 - 8">
+                                </div>
+                                <div class="input-field">
+                                    <label>Quiz 1 (Max 15)</label>
+                                    <input type="number" id="th-q1" min="0" max="15" step="0.5" placeholder="0 - 15">
+                                </div>
+                                <div class="input-field">
+                                    <label>Quiz 2 (Max 15)</label>
+                                    <input type="number" id="th-q2" min="0" max="15" step="0.5" placeholder="0 - 15">
+                                </div>
+                                <div class="input-field">
+                                    <label>Quiz 3 (Max 15)</label>
+                                    <input type="number" id="th-q3" min="0" max="15" step="0.5" placeholder="0 - 15">
+                                </div>
+                                <div class="input-field">
+                                    <label>Midterm Exam (Max 25)</label>
+                                    <input type="number" id="th-midterm" min="0" max="25" step="0.5" placeholder="0 - 25">
+                                </div>
+                                <div class="input-field">
+                                    <label>Final Exam (Max 40)</label>
+                                    <input type="number" id="th-final" min="0" max="40" step="0.5" placeholder="0 - 40">
+                                </div>
+                            </div>
+
+                            <div class="result-banner hidden" id="theory-result-box">
+                                <div class="res-title">Total Marks Breakdown</div>
+                                <div class="res-score" id="theory-total-marks">0.00 / 100</div>
+                                <div class="res-grade-pill" id="theory-grade-pill">Grade: F</div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" onclick="calculateTheoryResult()">
+                                    <i class="fa-solid fa-check"></i> Calculate Total Marks
+                                </button>
+                                <button class="btn btn-outline" onclick="resetTheoryForm()">
+                                    <i class="fa-solid fa-rotate-left"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. ENTER SGPA -->
+                <section id="tab-sgpa-entry" class="tab-pane">
+                    <div class="card-container glass-panel">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i class="fa-solid fa-pen-to-square"></i> Calculate & Save SGPA</h3>
+                                <p>Select a semester and enter grade points (0.00 - 4.00) for each course.</p>
+                            </div>
+                            <div class="sem-selector">
+                                <label for="sem-dropdown">Semester:</label>
+                                <select id="sem-dropdown" class="custom-select" onchange="loadSemesterCourses()">
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="custom-table" id="sgpa-courses-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Course Name</th>
+                                            <th>Credit Hours</th>
+                                            <th>Grade Point (0.00 - 4.00)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sgpa-table-body">
+                                        <!-- Dynamic course rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="result-banner hidden" id="sgpa-result-box">
+                                <div class="res-title" id="sgpa-res-title">SGPA Calculated</div>
+                                <div class="res-score" id="sgpa-res-val">--</div>
+                                <div class="res-grade-pill" id="sgpa-res-grade">Grade: --</div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" onclick="calculateAndSaveSGPA()">
+                                    <i class="fa-solid fa-floppy-disk"></i> Calculate & Save SGPA
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. VIEW SGPA RECORDS -->
+                <section id="tab-view-sgpa" class="tab-pane">
+                    <div class="card-container glass-panel">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-table-list"></i> Your Saved Semester SGPA Records</h3>
+                            <p>Overview of all stored semesters for your student ID.</p>
+                        </div>
+                        <div class="card-body">
+                            <div id="no-sgpa-msg" class="empty-state hidden">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <p>No semester records found. Go to "Enter SGPA" to add your grades.</p>
+                            </div>
+
+                            <div class="table-responsive" id="sgpa-records-table-container">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Semester</th>
+                                            <th>Completed Credit</th>
+                                            <th>SGPA Score</th>
+                                            <th>Letter Grade</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="records-table-body">
+                                        <!-- Rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. CGPA OVERVIEW -->
+                <section id="tab-cgpa-result" class="tab-pane">
+                    <div class="card-container glass-panel text-center">
+                        <div class="cgpa-badge-container">
+                            <div class="cgpa-ring">
+                                <span class="cgpa-value-large" id="overview-cgpa-val">0.00</span>
+                                <span class="cgpa-label">Cumulative GPA</span>
+                            </div>
+                        </div>
+                        <div class="cgpa-grade-display">
+                            <span class="badge-grade" id="overview-grade-val">Overall Grade: N/A</span>
+                        </div>
+                        <div class="cgpa-summary-boxes">
+                            <div class="summary-item">
+                                <span class="lbl">Total Completed Credits</span>
+                                <span class="val" id="overview-completed-credits">0.0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="lbl">Semesters Included</span>
+                                <span class="val" id="overview-total-sems">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. MANUAL CGPA CALCULATOR -->
+                <section id="tab-manual-cgpa" class="tab-pane">
+                    <div class="card-container glass-panel">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-sliders"></i> Manual CGPA Calculator</h3>
+                            <p>Enter SGPAs directly for any semesters to calculate cumulative GPA.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Semester</th>
+                                            <th>SGPA (0.00 - 4.00)</th>
+                                            <th>Total Credits</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="manual-cgpa-table-body">
+                                        <!-- Generated rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="result-banner hidden" id="manual-result-box">
+                                <div class="res-title">Calculated Cumulative CGPA</div>
+                                <div class="res-score" id="manual-cgpa-val">0.00</div>
+                                <div class="res-grade-pill" id="manual-grade-val">Grade: --</div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" onclick="calculateManualCGPA()">
+                                    <i class="fa-solid fa-calculator"></i> Calculate CGPA
+                                </button>
+                                <button class="btn btn-outline" onclick="resetManualForm()">
+                                    <i class="fa-solid fa-rotate-left"></i> Reset Form
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7. TARGET CGPA PLANNER -->
+                <section id="tab-target-cgpa" class="tab-pane">
+                    <div class="card-container glass-panel">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-bullseye"></i> Target CGPA Planner</h3>
+                            <p>Calculate the average SGPA required in remaining semesters to achieve your goal.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="input-field">
+                                    <label>Desired Target CGPA</label>
+                                    <input type="number" id="target-cgpa-input" min="0" max="4" step="0.01" placeholder="e.g. 3.75">
+                                </div>
+                                <div class="input-field">
+                                    <label>Remaining Semesters</label>
+                                    <input type="number" id="target-rem-sems" min="1" max="12" placeholder="e.g. 4">
+                                </div>
+                            </div>
+
+                            <div class="result-banner hidden" id="target-result-box">
+                                <div class="res-title">Required Target Performance</div>
+                                <div class="res-score" id="target-required-val">Avg SGPA ≥ --</div>
+                                <p id="target-advice-text" class="res-note"></p>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" onclick="calculateTargetCGPA()">
+                                    <i class="fa-solid fa-compass"></i> Calculate Required SGPA
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

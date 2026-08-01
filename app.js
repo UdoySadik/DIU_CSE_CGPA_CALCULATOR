@@ -691,37 +691,71 @@ function calculateTargetCGPA() {
     const remStr = document.getElementById('target-rem-sems').value.trim();
 
     const target = parseFloat(targetStr);
-    const remaining = parseInt(remStr);
+    const remainingCount = parseInt(remStr);
 
     if (isNaN(target) || target < 0 || target > 4.0) {
         showToast("Target CGPA must be between 0.00 and 4.00", "error");
         return;
     }
 
-    if (isNaN(remaining) || remaining <= 0) {
+    if (isNaN(remainingCount) || remainingCount <= 0) {
         showToast("Remaining semesters must be at least 1", "error");
         return;
     }
 
+    const records = currentUser.isGuest ? {} : getUserRecords();
+    const semKeys = Object.keys(SEMESTERS);
+
+    // Track completed vs uncompleted semesters
     let doneCredit = 0;
     let doneWeighted = 0;
+    let completedCount = 0;
+    const uncompletedSems = [];
 
-    if (!currentUser.isGuest) {
-        const records = getUserRecords();
-        for (const sem in records) {
+    semKeys.forEach(sem => {
+        if (records[sem]) {
             doneCredit += records[sem].credit;
             doneWeighted += records[sem].sgpa * records[sem].credit;
+            completedCount++;
+        } else {
+            uncompletedSems.push(sem);
         }
-    }
+    });
 
-    const remainingCredit = TOTAL_CURRICULUM_CREDITS - doneCredit;
+    const maxRemaining = uncompletedSems.length;
 
-    if (remainingCredit <= 0) {
-        showToast("You have completed all credits in the curriculum!", "error");
+    if (maxRemaining === 0) {
+        showToast("You have completed all 12 semesters in the curriculum!", "error");
         return;
     }
 
-    const requiredWeighted = (target * TOTAL_CURRICULUM_CREDITS) - doneWeighted;
+    // Input Validation: Check if remaining semesters requested exceeds actual remaining semesters
+    if (remainingCount > maxRemaining) {
+        const resBox = document.getElementById('target-result-box');
+        const valEl = document.getElementById('target-required-val');
+        const adviceEl = document.getElementById('target-advice-text');
+
+        resBox.classList.remove('hidden');
+        valEl.textContent = `Input Warning`;
+        valEl.style.color = "#f43f5e";
+        if (completedCount > 0) {
+            adviceEl.textContent = `⚠️ You have already completed ${completedCount} semesters! Only ${maxRemaining} semester(s) remain in the 12-semester curriculum.`;
+        } else {
+            adviceEl.textContent = `⚠️ Maximum 12 semesters exist in the CSE curriculum. Please enter a number between 1 and 12.`;
+        }
+        return;
+    }
+
+    // Dynamically calculate credits for the next N uncompleted semesters
+    let remainingCredit = 0;
+    for (let i = 0; i < remainingCount; i++) {
+        const sem = uncompletedSems[i];
+        remainingCredit += SEMESTERS[sem].total_credit;
+    }
+
+    const newTotalCredit = doneCredit + remainingCredit;
+    const totalRequiredWeighted = target * newTotalCredit;
+    const requiredWeighted = totalRequiredWeighted - doneWeighted;
     const requiredSGPA = requiredWeighted / remainingCredit;
     const requiredRounded = Math.round(requiredSGPA * 100) / 100;
 
@@ -745,9 +779,9 @@ function calculateTargetCGPA() {
         valEl.textContent = `Avg SGPA ≥ ${requiredRounded.toFixed(2)}`;
         valEl.style.color = "#3b82f6";
         if (doneCredit > 0) {
-            adviceEl.textContent = `🎯 Completed: ${doneCredit} Credits (Current CGPA: ${currentCGPA.toFixed(2)}). To achieve target ${target.toFixed(2)}, you need an average SGPA of ${requiredRounded.toFixed(2)} across your remaining ${remainingCredit} credits (${remaining} semesters).`;
+            adviceEl.textContent = `🎯 Completed: ${completedCount} Semesters (${doneCredit} Credits, Current CGPA: ${currentCGPA.toFixed(2)}). To reach CGPA ${target.toFixed(2)} across next ${remainingCount} semester(s) (${remainingCredit} Credits), you need an average SGPA of ${requiredRounded.toFixed(2)}.`;
         } else {
-            adviceEl.textContent = `🎯 To achieve an overall target CGPA of ${target.toFixed(2)}, you need an average SGPA of ${requiredRounded.toFixed(2)} across your next ${remaining} semesters (${remainingCredit} credits).`;
+            adviceEl.textContent = `🎯 To achieve a target CGPA of ${target.toFixed(2)} over the next ${remainingCount} semester(s) (${remainingCredit} Credits), you need an average SGPA of ${requiredRounded.toFixed(2)}.`;
         }
     }
 

@@ -24,24 +24,24 @@
                 <p>Manage, calculate, and track your SGPA & CGPA effortlessly</p>
             </div>
             
-            <div class="auth-form-container">
+            <form id="auth-form" class="auth-form-container" onsubmit="event.preventDefault(); handleLogin();">
                 <div id="auth-alert" class="alert hidden"></div>
                 
                 <div class="input-group">
                     <label for="student-id"><i class="fa-solid fa-id-card"></i> Student ID</label>
-                    <input type="text" id="student-id" placeholder="e.g. 251-15-065" autocomplete="off">
+                    <input type="text" id="student-id" name="username" placeholder="e.g. 251-15-065" autocomplete="username" required>
                 </div>
 
                 <div class="input-group">
                     <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
-                    <input type="password" id="password" placeholder="Enter password">
+                    <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
                 </div>
 
                 <div class="auth-actions">
-                    <button id="btn-login" class="btn btn-primary btn-block">
+                    <button type="submit" id="btn-login" class="btn btn-primary btn-block">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
                     </button>
-                    <button id="btn-register" class="btn btn-success btn-block">
+                    <button type="button" id="btn-register" class="btn btn-success btn-block">
                         <i class="fa-solid fa-user-plus"></i> Register
                     </button>
                 </div>
@@ -50,10 +50,10 @@
                     <span>OR</span>
                 </div>
 
-                <button id="btn-guest" class="btn btn-guest btn-block">
+                <button type="button" id="btn-guest" class="btn btn-guest btn-block">
                     <i class="fa-solid fa-user-clock"></i> Continue as Guest
                 </button>
-            </div>
+            </form>
         </div>
     </div>
 

@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     populateSemesterDropdown();
     renderManualTable();
+    checkActiveSession();
 });
 
 // ---------- DATABASE / LOCALSTORAGE HANDLERS ----------
@@ -153,6 +154,18 @@ function loadDatabase() {
 
 function saveDatabase() {
     localStorage.setItem('cse_cgpa_database', JSON.stringify(appData));
+}
+
+function checkActiveSession() {
+    const savedSession = localStorage.getItem('cse_cgpa_active_session');
+    if (savedSession) {
+        try {
+            currentUser = JSON.parse(savedSession);
+            launchApp();
+        } catch (e) {
+            currentUser = null;
+        }
+    }
 }
 
 function getUserRecords() {
@@ -278,12 +291,16 @@ function launchApp() {
         });
     }
 
+    // Persist active session across page refreshes
+    localStorage.setItem('cse_cgpa_active_session', JSON.stringify(currentUser));
+
     switchTab('dashboard');
     updateDashboardStats();
     showToast(`Logged in successfully as ${currentUser.isGuest ? 'Guest' : currentUser.studentId}`, 'success');
 }
 
 function handleLogout() {
+    localStorage.removeItem('cse_cgpa_active_session');
     currentUser = null;
     document.getElementById('app-container').classList.add('hidden');
     document.getElementById('auth-modal').classList.remove('hidden');

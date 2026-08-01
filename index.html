@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -121,6 +123,23 @@
                     <h2 id="current-tab-title">Dashboard</h2>
                 </div>
                 <div class="top-actions">
+                    <div class="theme-accent-picker" title="Theme Accent Color">
+                        <button class="theme-dot blue active" onclick="setThemeAccent('blue')" title="Blue Accent"></button>
+                        <button class="theme-dot emerald" onclick="setThemeAccent('emerald')" title="Emerald Accent"></button>
+                        <button class="theme-dot purple" onclick="setThemeAccent('purple')" title="Purple Accent"></button>
+                        <button class="theme-dot cyan" onclick="setThemeAccent('cyan')" title="Cyan Accent"></button>
+                        <button class="theme-dot amber" onclick="setThemeAccent('amber')" title="Amber Accent"></button>
+                    </div>
+                    <button class="btn btn-outline btn-sm guest-disabled" onclick="exportJSONBackup()" title="Backup JSON Data">
+                        <i class="fa-solid fa-download"></i> Backup
+                    </button>
+                    <button class="btn btn-outline btn-sm guest-disabled" onclick="document.getElementById('json-file-input').click()" title="Restore JSON Data">
+                        <i class="fa-solid fa-upload"></i> Restore
+                    </button>
+                    <input type="file" id="json-file-input" accept=".json" onchange="importJSONBackup(event)" style="display:none">
+                    <button class="btn btn-primary btn-sm guest-disabled" onclick="window.print()" title="Print PDF Transcript">
+                        <i class="fa-solid fa-print"></i> Print PDF
+                    </button>
                     <button id="btn-quick-export" class="btn btn-outline btn-sm guest-disabled">
                         <i class="fa-solid fa-file-export"></i> Export Report
                     </button>
@@ -177,6 +196,16 @@
                             <h3>Target CGPA Planner</h3>
                             <p>Plan ahead! Find out what average SGPA you need in upcoming semesters.</p>
                             <span class="card-link">Plan Target <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+
+                    <!-- SGPA PERFORMANCE CHART CARD -->
+                    <div class="chart-card glass-panel" style="margin-top: 24px; padding: 24px;">
+                        <div class="card-header flex-between" style="border:none; margin-bottom:12px; padding-bottom:0;">
+                            <h3><i class="fa-solid fa-chart-line"></i> SGPA Performance Trajectory</h3>
+                        </div>
+                        <div class="card-body" style="height: 280px; position: relative;">
+                            <canvas id="sgpa-chart"></canvas>
                         </div>
                     </div>
                 </section>

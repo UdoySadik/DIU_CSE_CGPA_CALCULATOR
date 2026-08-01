@@ -851,6 +851,187 @@ function exportSummary() {
     showToast("Result summary report downloaded!", "success");
 }
 
+// ---------- 8. CHART.JS PERFORMANCE TRAJECTORY RENDERER ----------
+let sgpaChartInstance = null;
+
+function renderSGPAChart() {
+    const canvas = document.getElementById('sgpa-chart');
+    if (!canvas) return;
+
+    const records = getUserRecords();
+    const semKeys = Object.keys(SEMESTERS);
+    const labels = [];
+    const dataPoints = [];
+
+    semKeys.forEach(sem => {
+        if (records[sem]) {
+            labels.push(sem);
+            dataPoints.push(records[sem].sgpa);
+        }
+    });
+
+    if (sgpaChartInstance) {
+        sgpaChartInstance.destroy();
+    }
+
+    if (labels.length === 0) {
+        labels.push('L1T1');
+        dataPoints.push(0);
+    }
+
+    const ctx = canvas.getContext('2d');
+    
+    // Theme accent color getter
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#3b82f6';
+
+    sgpaChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'SGPA Score',
+                data: dataPoints,
+                borderColor: accentColor,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.35,
+                pointRadius: 6,
+                pointHoverRadius: 9,
+                pointBackgroundColor: accentColor,
+                pointBorderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0.0,
+                    max: 4.0,
+                    grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                    ticks: { color: '#9ca3af', font: { family: 'Outfit' } }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                    ticks: { color: '#9ca3af', font: { family: 'Outfit' } }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// ---------- 9. JSON DATA BACKUP & RESTORE ----------
+function exportJSONBackup() {
+    if (currentUser.isGuest) {
+        showToast("Backup is disabled in Guest Mode.", "error");
+        return;
+    }
+
+    const records = getUserRecords();
+    const backupObj = {
+        studentId: currentUser.studentId,
+        exportedAt: new Date().toISOString(),
+        records: records
+    };
+
+    const jsonStr = JSON.stringify(backupObj, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `DIU_CSE_CGPA_Backup_${currentUser.studentId}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    showToast("JSON Data Backup downloaded!", "success");
+}
+
+function importJSONBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (currentUser.isGuest) {
+        showToast("Restore is disabled in Guest Mode.", "error");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (!data.records || typeof data.records !== 'object') {
+                throw new Error("Invalid backup file structure");
+            }
+
+            if (!appData[currentUser.studentId]) {
+                appData[currentUser.studentId] = { password: '', records: {} };
+            }
+
+            appData[currentUser.studentId].records = data.records;
+            saveDatabase();
+
+            updateDashboardStats();
+            renderSGPARecords();
+            renderCGPAOverview();
+            renderSGPAChart();
+
+            showToast("JSON Backup restored successfully!", "success");
+        } catch (err) {
+            showToast("Failed to restore backup file. Invalid format.", "error");
+        }
+    };
+    reader.readAsText(file);
+}
+
+// ---------- 10. THEME ACCENT SWITCHER ----------
+const THEME_ACCENTS = {
+    'blue': { primary: '#3b82f6', hover: '#2563eb', glow: 'rgba(59, 130, 246, 0.35)' },
+    'emerald': { primary: '#10b981', hover: '#059669', glow: 'rgba(16, 185, 129, 0.35)' },
+    'purple': { primary: '#8b5cf6', hover: '#7c3aed', glow: 'rgba(139, 92, 246, 0.35)' },
+    'cyan': { primary: '#06b6d4', hover: '#0891b2', glow: 'rgba(6, 182, 212, 0.35)' },
+    'amber': { primary: '#f59e0b', hover: '#d97706', glow: 'rgba(245, 158, 11, 0.35)' }
+};
+
+function setThemeAccent(themeKey) {
+    const theme = THEME_ACCENTS[themeKey];
+    if (!theme) return;
+
+    document.documentElement.style.setProperty('--primary', theme.primary);
+    document.documentElement.style.setProperty('--primary-hover', theme.hover);
+    document.documentElement.style.setProperty('--primary-glow', theme.glow);
+
+    document.querySelectorAll('.theme-dot').forEach(dot => {
+        dot.classList.toggle('active', dot.classList.contains(themeKey));
+    });
+
+    localStorage.setItem('cse_cgpa_theme_accent', themeKey);
+    renderSGPAChart();
+}
+
+function loadSavedThemeAccent() {
+    const saved = localStorage.getItem('cse_cgpa_theme_accent') || 'blue';
+    setThemeAccent(saved);
+}
+
+// Update Dashboard Refresh to include Chart
+const origUpdateDash = updateDashboardStats;
+updateDashboardStats = function() {
+    origUpdateDash();
+    renderSGPAChart();
+};
+
+// Apply theme on load & register PWA Service Worker
+document.addEventListener('DOMContentLoaded', () => {
+    loadSavedThemeAccent();
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(err => {});
+    }
+});
+
 // ---------- UTILS: TOAST SYSTEM ----------
 function showToast(msg, type = "success") {
     const container = document.getElementById('toast-container');

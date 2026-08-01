@@ -731,18 +731,24 @@ function calculateTargetCGPA() {
 
     resBox.classList.remove('hidden');
 
+    const currentCGPA = doneCredit > 0 ? (doneWeighted / doneCredit) : 0;
+
     if (requiredRounded > 4.00) {
         valEl.textContent = `Avg SGPA ≥ ${requiredRounded.toFixed(2)}`;
         valEl.style.color = "#f43f5e";
-        adviceEl.textContent = "⚠️ Mathematically impossible! The required average exceeds the maximum 4.00 scale.";
+        adviceEl.textContent = `⚠️ Mathematically impossible! You need ${requiredRounded.toFixed(2)} SGPA, which exceeds the 4.00 maximum limit.`;
     } else if (requiredRounded <= 0) {
         valEl.textContent = `Avg SGPA ≥ 2.00`;
         valEl.style.color = "#10b981";
-        adviceEl.textContent = "🎉 You have already secured your target CGPA! Just maintain passing grades.";
+        adviceEl.textContent = `🎉 You have already secured your target CGPA! Just maintain passing grades (>= 2.00).`;
     } else {
         valEl.textContent = `Avg SGPA ≥ ${requiredRounded.toFixed(2)}`;
         valEl.style.color = "#3b82f6";
-        adviceEl.textContent = `🎯 You need an average SGPA of ${requiredRounded.toFixed(2)} across your next ${remaining} semesters.`;
+        if (doneCredit > 0) {
+            adviceEl.textContent = `🎯 Completed: ${doneCredit} Credits (Current CGPA: ${currentCGPA.toFixed(2)}). To achieve target ${target.toFixed(2)}, you need an average SGPA of ${requiredRounded.toFixed(2)} across your remaining ${remainingCredit} credits (${remaining} semesters).`;
+        } else {
+            adviceEl.textContent = `🎯 To achieve an overall target CGPA of ${target.toFixed(2)}, you need an average SGPA of ${requiredRounded.toFixed(2)} across your next ${remaining} semesters (${remainingCredit} credits).`;
+        }
     }
 
     showToast("Target SGPA requirement calculated!", "success");
